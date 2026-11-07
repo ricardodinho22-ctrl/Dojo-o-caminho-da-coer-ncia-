@@ -1,0 +1,19 @@
+{
+  "name": "DOJO — Caminho da Coerência",
+  "short_name": "DOJO",
+  "description": "Seu compromisso. Sua evolução. Seu caminho.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#101112",
+  "theme_color": "#101112",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "lang": "pt-BR"
+}
