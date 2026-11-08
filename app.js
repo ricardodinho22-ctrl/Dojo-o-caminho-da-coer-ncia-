@@ -35,5 +35,16 @@ async function initCloud(){let c=config();$("sbUrl").value=c.url||"";$("sbKey").
 $("configForm").onsubmit=e=>{e.preventDefault();let url=$("sbUrl").value.trim(),key=$("sbKey").value.trim();if(!url||!key)return $("configMsg").textContent="Preencha URL e chave pública.";localStorage.setItem(cfgkey,JSON.stringify({url,key}));location.reload()};
 $("authForm").onsubmit=async e=>{e.preventDefault();if(!S.sb)return toast("Configure o Supabase primeiro.");let {error}=await S.sb.auth.signInWithPassword({email:$("email").value,password:$("password").value});toast(error?error.message:"Login realizado.")};
 $("signup").onclick=async()=>{if(!S.sb)return toast("Configure o Supabase primeiro.");let {data,error}=await S.sb.auth.signUp({email:$("email").value,password:$("password").value});toast(error?error.message:(data.session?"Conta criada!":"Verifique seu e-mail para confirmar."))};
-$("logout").onclick=async()=>{await S.sb?.auth.signOut();$("authForm").classList.remove("hidden");$("logout").classList.add("hidden")};
+$("logout").onclick=async()=>{
+  if(S.sb) await S.sb.auth.signOut();
+
+  clearTimeout(timer);
+
+  S.user=null;
+  S.habits=[];
+  S.checks={};
+  S.journal=[];
+  S.goals=[];
+  S.reviews=[];
+localStorage.removeItem(key);$("authForm").classList.remove("hidden");$("logout").classList.add("hidden");render();status("Sessão encerrada · dados locais removidos");};
 load();render();initCloud();if("serviceWorker"in navigator)addEventListener("load",()=>navigator.serviceWorker.register("./sw.js"));
