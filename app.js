@@ -5,6 +5,10 @@ const $=id=>document.getElementById(id);
 const today=()=>new Date().toLocaleDateString("en-CA");
 const esc=s=>String(s||"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
+const SUPABASE_URL="https://rhqfrsaiooddrudhbhum.supabase.co";
+const SUPABASE_KEY="sb_publishable_1qAVSqUAj2D6pPH-wrBv6Q_uwmrC3T3";
+const ADMIN_UID="510c3187-29e8-4d30-a159-bf8de7dd25fc";
+
 const defaults=[
   "Levantei no horário planejado",
   "Cuidei do corpo ou respeitei minha recuperação",
@@ -23,10 +27,12 @@ const S={
   user:null
 };
 
-// A chave antiga é preservada, sem migração automática.
-const legacyKey="dojo-v1-data";
 const cfgkey="dojo-v1-supabase";
 const offlineKey="dojo-v1-data-offline";
+
+function isAdmin(){
+  return S.user?.id===ADMIN_UID;
+}
 
 function dataKey(){
   return S.user
@@ -48,23 +54,16 @@ function load(){
   try{
     const d=JSON.parse(localStorage.getItem(dataKey())||"{}");
 
-    S.habits=d.habits||defaults.map((name,i)=>({
-      id:"h"+i,
-      name,
-      custom:false
-    }));
+    S.habits=Array.isArray(d.habits)
+      ?d.habits
+      :defaults.map((name,i)=>({id:"h"+i,name,custom:false}));
 
     S.checks=d.checks||{};
     S.journal=d.journal||[];
     S.goals=d.goals||[];
     S.reviews=d.reviews||[];
   }catch{
-    S.habits=defaults.map((name,i)=>({
-      id:"h"+i,
-      name,
-      custom:false
-    }));
-
+    S.habits=defaults.map((name,i)=>({id:"h"+i,name,custom:false}));
     S.checks={};
     S.journal=[];
     S.goals=[];
@@ -95,8 +94,24 @@ function done(id){
   return !!S.checks[today()]?.[id];
 }
 
+function syncAccountUI(){
+  const logged=!!S.user;
+
+  $("authForm").classList.toggle("hidden",logged);
+  $("logout").classList.toggle("hidden",!logged);
+
+  // A configuração técnica só aparece para o administrador autenticado.
+  $("adminConfigPanel").classList.toggle("hidden",!isAdmin());
+
+  if(isAdmin()){
+    const c=config();
+    $("sbUrl").value=c.url;
+    $("sbKey").value=c.key;
+  }
+}
+
 function render(){
-  let active=S.habits;
+  const active=S.habits;
 
   const markup=h=>`<div class="habit ${done(h.id)?"done":""}">
     <input type="checkbox" data-check="${esc(h.id)}" ${done(h.id)?"checked":""}>
@@ -120,24 +135,25 @@ function render(){
     render();
   });
 
-  let n=active.filter(h=>done(h.id)).length;
+  const n=active.filter(h=>done(h.id)).length;
 
   $("score").textContent=`${n} / ${active.length}`;
   $("progress").style.width=(active.length?100*n/active.length:0)+"%";
 
-  let now=new Date(),m=new Date(now);
+  const now=new Date(),m=new Date(now);
   m.setDate(now.getDate()-(now.getDay()+6)%7);
 
-  let ds=Array.from({length:7},(_,i)=>{
-    let d=new Date(m);
+  const ds=Array.from({length:7},(_,i)=>{
+    const d=new Date(m);
     d.setDate(m.getDate()+i);
     return d.toLocaleDateString("en-CA");
   });
 
-  let total=ds.length*active.length,complete=0,days=0;
+  const total=ds.length*active.length;
+  let complete=0,days=0;
 
   ds.forEach(d=>{
-    let c=active.filter(h=>S.checks[d]?.[h.id]).length;
+    const c=active.filter(h=>S.checks[d]?.[h.id]).length;
     complete+=c;
     if(c)days++;
   });
@@ -159,13 +175,14 @@ function render(){
     <div class="goal">
       <b>${esc(g.title)}</b>
       <p>Próxima ação: ${esc(g.next)}</p>
-      <button class="secondary" data-toggle="${g.id}">${g.done?"Reabrir":"Concluir"}</button>
-      <button class="secondary" data-del="${g.id}">Excluir</button>
+      <button class="secondary" data-toggle="${esc(g.id)}">${g.done?"Reabrir":"Concluir"}</button>
+      <button class="secondary" data-del="${esc(g.id)}">Excluir</button>
     </div>
   `).join("");
 
   document.querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{
-    let g=S.goals.find(x=>x.id===b.dataset.toggle);
+    const g=S.goals.find(x=>x.id===b.dataset.toggle);
+    if(!g)return;
     g.done=!g.done;
     save();
     render();
@@ -186,14 +203,23 @@ function render(){
   `).join("");
 }
 
-document.querySelectorAll("[data-go]").forEach(b=>b.onclick=()=>go(b.dataset.go));
+document.querySelectorAll("[data-go]").forEach(b=>{
+  b.onclick=()=>go(b.dataset.go);
+});
 
 $("accountBtn").onclick=()=>go("account");
 
 function go(id){
-  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id===id));
-  document.querySelectorAll(".nav").forEach(v=>v.classList.toggle("active",v.dataset.go===id));
+  document.querySelectorAll(".view").forEach(v=>{
+    v.classList.toggle("active",v.id===id);
+  });
+
+  document.querySelectorAll(".nav").forEach(v=>{
+    v.classList.toggle("active",v.dataset.go===id);
+  });
+
   render();
+  syncAccountUI();
 }
 
 $("todayLabel").textContent=new Date().toLocaleDateString("pt-BR",{
@@ -205,7 +231,7 @@ $("todayLabel").textContent=new Date().toLocaleDateString("pt-BR",{
 $("addHabit").onsubmit=e=>{
   e.preventDefault();
 
-  let name=$("habitName").value.trim();
+  const name=$("habitName").value.trim();
   if(!name)return;
 
   S.habits.push({
@@ -223,7 +249,7 @@ $("addHabit").onsubmit=e=>{
 $("journalForm").onsubmit=e=>{
   e.preventDefault();
 
-  let j={
+  const j={
     id:crypto.randomUUID(),
     date:today(),
     v:$("victory").value,
@@ -245,8 +271,8 @@ $("goalForm").onsubmit=e=>{
 
   S.goals.push({
     id:crypto.randomUUID(),
-    title:$("goalTitle").value,
-    next:$("goalNext").value,
+    title:$("goalTitle").value.trim(),
+    next:$("goalNext").value.trim(),
     done:false
   });
 
@@ -259,7 +285,7 @@ $("goalForm").onsubmit=e=>{
 $("reviewForm").onsubmit=e=>{
   e.preventDefault();
 
-  let vals=[1,2,3,4,5,6].map(i=>$("r"+i).value.trim());
+  const vals=[1,2,3,4,5,6].map(i=>$("r"+i).value.trim());
 
   if(!vals.some(Boolean))return toast("Preencha ao menos uma resposta.");
 
@@ -281,7 +307,7 @@ $("reviewForm").onsubmit=e=>{
 };
 
 $("export").onclick=()=>{
-  let blob=new Blob([
+  const blob=new Blob([
     JSON.stringify({
       exportedAt:new Date().toISOString(),
       habits:S.habits,
@@ -292,7 +318,7 @@ $("export").onclick=()=>{
     },null,2)
   ],{type:"application/json"});
 
-  let a=document.createElement("a");
+  const a=document.createElement("a");
   a.href=URL.createObjectURL(blob);
   a.download="dojo-backup-"+today()+".json";
   a.click();
@@ -301,10 +327,14 @@ $("export").onclick=()=>{
 
 function config(){
   try{
-    return JSON.parse(localStorage.getItem(cfgkey)||"{}");
-  }catch{
-    return {};
-  }
+    const saved=JSON.parse(localStorage.getItem(cfgkey)||"null");
+    if(saved?.url&&saved?.key)return saved;
+  }catch{}
+
+  return {
+    url:SUPABASE_URL,
+    key:SUPABASE_KEY
+  };
 }
 
 function status(t){
@@ -387,7 +417,7 @@ async function loadCloud(){
       render();
       status("Conta conectada · dados sincronizados");
     }else{
-      // Conta sem registro: usa somente seu próprio armazenamento.
+      // Uma conta nova recebe apenas seus próprios dados locais ou os padrões.
       load();
       localStorage.setItem(dataKey(),JSON.stringify(getData()));
 
@@ -403,85 +433,71 @@ async function loadCloud(){
   }
 }
 
+function handleSignedOut(){
+  clearTimeout(timer);
+
+  S.user=null;
+  load();
+
+  syncAccountUI();
+  render();
+  status("Sessão encerrada · modo offline");
+}
+
+function handleSignedIn(user){
+  if(!user)return;
+
+  const previousUserId=S.user?.id||null;
+  if(previousUserId===user.id)return;
+
+  clearTimeout(timer);
+
+  S.user=user;
+  load();
+
+  syncAccountUI();
+  render();
+
+  setTimeout(()=>loadCloud(),0);
+}
+
 async function initCloud(){
-  const c=config();
-
-  $("sbUrl").value=c.url||"";
-  $("sbKey").value=c.key||"";
-
-  if(!c.url||!c.key){
-    S.user=null;
-    load();
-    render();
-    return status("Modo local · configure a nuvem");
-  }
-
   status("Conectando à nuvem...");
 
   try{
+    const c=config();
     S.sb=createClient(c.url,c.key);
 
     const {data,error}=await S.sb.auth.getSession();
-
     if(error)throw error;
 
     S.user=data.session?.user||null;
 
     S.sb.auth.onAuthStateChange((event,session)=>{
-      const nextUser=session?.user||null;
-      const previousUserId=S.user?.id||null;
-      const nextUserId=nextUser?.id||null;
-
       if(event==="SIGNED_OUT"){
-        clearTimeout(timer);
-
-        S.user=null;
-        load();
-
-        $("authForm").classList.remove("hidden");
-        $("logout").classList.add("hidden");
-
-        render();
-        status("Sessão encerrada · modo offline");
+        handleSignedOut();
         return;
       }
 
-      if(nextUser&&previousUserId!==nextUserId){
-        clearTimeout(timer);
-
-        S.user=nextUser;
-        load();
-
-        $("authForm").classList.add("hidden");
-        $("logout").classList.remove("hidden");
-
-        render();
-
-        setTimeout(()=>loadCloud(),0);
+      if(session?.user){
+        handleSignedIn(session.user);
       }
     });
 
+    syncAccountUI();
+    load();
+    render();
+
     if(S.user){
-      $("authForm").classList.add("hidden");
-      $("logout").classList.remove("hidden");
-
-      load();
-      render();
-
       await loadCloud();
     }else{
-      $("authForm").classList.remove("hidden");
-      $("logout").classList.add("hidden");
-
-      load();
-      render();
-
-      status("Nuvem configurada · entre ou crie sua conta");
+      status("Nuvem pronta · entre ou crie sua conta");
     }
   }catch(e){
     S.user=null;
     S.sb=null;
 
+    syncAccountUI();
     load();
     render();
 
@@ -492,42 +508,64 @@ async function initCloud(){
 $("configForm").onsubmit=e=>{
   e.preventDefault();
 
-  let url=$("sbUrl").value.trim();
-  let key=$("sbKey").value.trim();
+  if(!isAdmin()){
+    toast("Acesso restrito ao administrador.");
+    return;
+  }
+
+  const url=$("sbUrl").value.trim();
+  const key=$("sbKey").value.trim();
 
   if(!url||!key){
-    return $("configMsg").textContent="Preencha URL e chave pública.";
+    $("configMsg").textContent="Preencha URL e chave pública.";
+    return;
   }
 
   localStorage.setItem(cfgkey,JSON.stringify({url,key}));
+  $("configMsg").textContent="Configuração salva. Reconectando...";
   location.reload();
 };
 
 $("authForm").onsubmit=async e=>{
   e.preventDefault();
 
-  if(!S.sb)return toast("Configure o Supabase primeiro.");
+  if(!S.sb)return toast("Não foi possível conectar à nuvem.");
 
-  let {error}=await S.sb.auth.signInWithPassword({
-    email:$("email").value,
+  const {error}=await S.sb.auth.signInWithPassword({
+    email:$("email").value.trim(),
     password:$("password").value
   });
 
-  toast(error?error.message:"Login realizado.");
+  if(error){
+    toast(error.message);
+  }else{
+    toast("Login realizado.");
+  }
 };
 
 $("signup").onclick=async()=>{
-  if(!S.sb)return toast("Configure o Supabase primeiro.");
+  if(!S.sb)return toast("Não foi possível conectar à nuvem.");
 
-  let {data,error}=await S.sb.auth.signUp({
-    email:$("email").value,
-    password:$("password").value
+  const email=$("email").value.trim();
+  const password=$("password").value;
+
+  if(!email||!password){
+    toast("Preencha e-mail e senha.");
+    return;
+  }
+
+  const {data,error}=await S.sb.auth.signUp({
+    email,
+    password
   });
 
-  toast(error
-    ?error.message
-    :(data.session?"Conta criada!":"Verifique seu e-mail para confirmar.")
-  );
+  if(error){
+    toast(error.message);
+  }else if(data.session){
+    toast("Conta criada com sucesso!");
+  }else{
+    toast("Conta criada! Verifique seu e-mail para confirmar.");
+  }
 };
 
 $("logout").onclick=async()=>{
@@ -540,24 +578,15 @@ $("logout").onclick=async()=>{
     return;
   }
 
-  clearTimeout(timer);
-
-  S.user=null;
-  load();
-
-  $("authForm").classList.remove("hidden");
-  $("logout").classList.add("hidden");
-
-  render();
-  status("Sessão encerrada · modo offline");
+  handleSignedOut();
+  toast("Você saiu da sua conta.");
 };
 
-// Inicializa primeiro a autenticação e só depois carrega os dados.
-// Assim, os dados de uma conta não aparecem antes de identificar o usuário.
 initCloud();
 
 if("serviceWorker"in navigator){
   addEventListener("load",()=>{
     navigator.serviceWorker.register("./sw.js");
   });
-                   }
+                                                             }
+      
