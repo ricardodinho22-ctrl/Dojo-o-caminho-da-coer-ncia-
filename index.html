@@ -1,11 +1,303 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#101112"><link rel="manifest" href="manifest.webmanifest"><link rel="icon" href="icon.svg"><link rel="stylesheet" href="styles.css"><title>DOJO — Caminho da Coerência</title></head><body><div id="app">
-<header><div class="brand"><b>道</b><span><strong>DOJO</strong><small>CAMINHO DA COERÊNCIA</small></span></div><button id="accountBtn">◉</button></header>
+
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#101112">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg">
+  <link rel="stylesheet" href="styles.css">
+  <title>DOJO — Caminho da Coerência</title>
+</head>
+<body>
+<div id="app">
+
+<header>
+  <div class="brand">
+    <b>道</b>
+    <span>
+      <strong>DOJO</strong>
+      <small>CAMINHO DA COERÊNCIA</small>
+    </span>
+  </div>
+  <button id="accountBtn">◉</button>
+</header>
+
 <main>
-<section id="dashboard" class="view active"><small class="eyebrow" id="todayLabel"></small><h1>Disciplina é <i>coerência.</i></h1><p class="muted">Pequenas ações. Compromissos cumpridos. Uma vida construída com intenção.</p><div class="quote"><b>誠</b><span><small>PRINCÍPIO DO DIA</small><br>“Minha palavra deve encontrar morada nas minhas ações.”</span></div><div class="row"><h2>Seu dia</h2><strong id="score">0 / 5</strong></div><div class="progress"><div id="progress"></div></div><div id="todayHabits"></div><div class="row section"><h2>Visão da semana</h2><button data-go="review" class="link">Revisar →</button></div><div class="stats"><div><b id="weekDone">0</b><small>ações concluídas</small></div><div><b id="weekRate">0%</b><small>consistência</small></div><div><b id="weekDays">0</b><small>dias com registros</small></div></div><div class="panel"><small class="gold">LEMBRETE</small><p>Não procure uma semana perfeita. Procure uma semana melhor do que a anterior.</p></div></section>
-<section id="habits" class="view"><small class="eyebrow">PRÁTICA DIÁRIA</small><h1>Disciplina</h1><p class="muted">Registre o que você fez, sem transformar um dia difícil em motivo para desistir.</p><div class="panel"><h2>Compromissos</h2><div id="habitManager"></div><form id="addHabit" class="inline"><input id="habitName" maxlength="70" placeholder="Adicionar compromisso..." required><button class="primary">Adicionar</button></form></div></section>
-<section id="journal" class="view"><small class="eyebrow">AUTOCONHECIMENTO</small><h1>Diário de <i>coerência</i></h1><p class="muted">O que pensei, prometi e fiz?</p><form id="journalForm" class="panel stack"><label>Minha principal vitória<textarea id="victory" rows="2"></textarea></label><label>Onde encontrei dificuldade?<textarea id="obstacle" rows="2"></textarea></label><label>O que aprendi?<textarea id="learning" rows="2"></textarea></label><button class="primary">Salvar reflexão</button></form><h2 class="section">Registros anteriores</h2><div id="journalHistory"></div></section>
-<section id="goals" class="view"><small class="eyebrow">DIREÇÃO</small><h1>Metas & caminho</h1><p class="muted">Sonhos precisam de direção, ações e revisão.</p><form id="goalForm" class="panel stack"><label>Minha meta<input id="goalTitle" required maxlength="100" placeholder="Ex.: desenvolver a SANMAR autoral"></label><label>Próxima ação concreta<input id="goalNext" required maxlength="140" placeholder="Ex.: reservar 45 minutos para composição"></label><button class="primary">Adicionar meta</button></form><div id="goalList"></div></section>
-<section id="code" class="view"><small class="eyebrow">SEUS PRINCÍPIOS</small><h1>Código pessoal</h1><p class="muted">Versão 1.0 · Caminho da Coerência</p><div class="codeintro"><b>誠</b><strong>“Minha palavra deve encontrar morada nas minhas ações.”</strong></div><ol class="principles"><li><b>Minha palavra tem valor.</b><span>Não prometerei levianamente. O que decidir fazer, procurarei cumprir.</span></li><li><b>Não negociarei meus objetivos com desconfortos passageiros.</b><span>Preguiça, medo e desânimo são sentimentos, não comandantes.</span></li><li><b>Valorizarei o tempo que tenho.</b><span>Não esperarei uma crise para viver conscientemente.</span></li><li><b>Serei responsável pelo meu desenvolvimento.</b><span>Meu crescimento exige minha participação.</span></li><li><b>Não confundirei perfeição com excelência.</b><span>Aceitarei falhas, corrigirei meus erros e retomarei o caminho.</span></li><li><b>Respeitarei meu corpo e minha mente.</b><span>Descanso e recuperação também fazem parte da disciplina.</span></li><li><b>Não viverei de aparência.</b><span>Praticarei disciplina mesmo quando ninguém estiver olhando.</span></li><li><b>Construirei uma vida da qual me orgulhe.</b><span>Pelos resultados e pelo homem que me tornei no caminho.</span></li></ol></section>
-<section id="review" class="view"><small class="eyebrow">FECHAMENTO DA SEMANA</small><h1>Revisão semanal</h1><p class="muted">Honestidade sem culpa. Ajustes sem desistência.</p><form id="reviewForm" class="panel stack"><label>1. Quais compromissos cumpri?<textarea id="r1" rows="2"></textarea></label><label>2. Onde agi mesmo sem motivação?<textarea id="r2" rows="2"></textarea></label><label>3. Onde procrastinei e qual foi o obstáculo?<textarea id="r3" rows="2"></textarea></label><label>4. Como retomei depois de falhar?<textarea id="r4" rows="2"></textarea></label><label>5. Como evoluí em corpo, música, trabalho/estudo e vida pessoal?<textarea id="r5" rows="3"></textarea></label><label>6. Até três prioridades para a próxima semana<textarea id="r6" rows="3"></textarea></label><button class="primary">Salvar revisão</button></form><div id="reviewHistory"></div></section>
-<section id="account" class="view"><small class="eyebrow">SINCRONIZAÇÃO E PRIVACIDADE</small><h1>Minha conta</h1><div class="panel"><p id="cloudStatus">● Modo local de demonstração</p><p class="muted tiny">Configure o Supabase para criar sua conta e sincronizar seus dados na nuvem.</p><form id="authForm" class="stack"><label>E-mail<input id="email" type="email" required></label><label>Senha<input id="password" type="password" minlength="6" required></label><div class="buttons"><button class="primary">Entrar</button><button type="button" id="signup" class="secondary">Criar conta</button></div></form><button id="logout" class="secondary hidden">Sair da conta</button></div><div class="panel"><h2>Configuração da nuvem</h2><p class="muted tiny">Cole a URL e a chave pública (anon/publishable) do Supabase. Nunca use a chave service_role aqui.</p><form id="configForm" class="stack"><label>Project URL<input id="sbUrl" type="url" placeholder="https://seu-projeto.supabase.co"></label><label>Publishable / anon key<textarea id="sbKey" rows="2"></textarea></label><button class="primary">Salvar configuração</button></form><p id="configMsg" class="tiny muted"></p></div><div class="panel"><h2>Seus dados</h2><p class="muted tiny">No modo local, os registros ficam neste navegador. Com a conta conectada, são sincronizados na nuvem.</p><button id="export" class="secondary">Exportar backup (.json)</button></div></section>
-</main><nav><button class="nav active" data-go="dashboard"><b>⌂</b><small>Hoje</small></button><button class="nav" data-go="habits"><b>✓</b><small>Hábitos</small></button><button class="nav" data-go="journal"><b>▤</b><small>Diário</small></button><button class="nav" data-go="goals"><b>◎</b><small>Metas</small></button><button class="nav" data-go="code"><b>道</b><small>Código</small></button></nav><div id="toast"></div></div><script type="module" src="app.js"></script></body></html>
+
+<section id="dashboard" class="view active">
+  <small class="eyebrow" id="todayLabel"></small>
+  <h1>Disciplina é <i>coerência.</i></h1>
+  <p class="muted">Pequenas ações. Compromissos cumpridos. Uma vida construída com intenção.</p>
+
+  <div class="quote">
+    <b>誠</b>
+    <span>
+      <small>PRINCÍPIO DO DIA</small><br>
+      “Minha palavra deve encontrar morada nas minhas ações.”
+    </span>
+  </div>
+
+  <div class="row">
+    <h2>Seu dia</h2>
+    <strong id="score">0 / 5</strong>
+  </div>
+
+  <div class="progress">
+    <div id="progress"></div>
+  </div>
+
+  <div id="todayHabits"></div>
+
+  <div class="row section">
+    <h2>Visão da semana</h2>
+    <button data-go="review" class="link">Revisar →</button>
+  </div>
+
+  <div class="stats">
+    <div>
+      <b id="weekDone">0</b>
+      <small>ações concluídas</small>
+    </div>
+    <div>
+      <b id="weekRate">0%</b>
+      <small>consistência</small>
+    </div>
+    <div>
+      <b id="weekDays">0</b>
+      <small>dias com registros</small>
+    </div>
+  </div>
+
+  <div class="panel">
+    <small class="gold">LEMBRETE</small>
+    <p>Não procure uma semana perfeita. Procure uma semana melhor do que a anterior.</p>
+  </div>
+</section>
+
+<section id="habits" class="view">
+  <small class="eyebrow">PRÁTICA DIÁRIA</small>
+  <h1>Disciplina</h1>
+  <p class="muted">Registre o que você fez, sem transformar um dia difícil em motivo para desistir.</p>
+
+  <div class="panel">
+    <h2>Compromissos</h2>
+    <div id="habitManager"></div>
+
+    <form id="addHabit" class="inline">
+      <input id="habitName" maxlength="70" placeholder="Adicionar compromisso..." required>
+      <button class="primary">Adicionar</button>
+    </form>
+  </div>
+</section>
+
+<section id="journal" class="view">
+  <small class="eyebrow">AUTOCONHECIMENTO</small>
+  <h1>Diário de <i>coerência</i></h1>
+  <p class="muted">O que pensei, prometi e fiz?</p>
+
+  <form id="journalForm" class="panel stack">
+    <label>Minha principal vitória
+      <textarea id="victory" rows="2"></textarea>
+    </label>
+    <label>Onde encontrei dificuldade?
+      <textarea id="obstacle" rows="2"></textarea>
+    </label>
+    <label>O que aprendi?
+      <textarea id="learning" rows="2"></textarea>
+    </label>
+    <button class="primary">Salvar reflexão</button>
+  </form>
+
+  <h2 class="section">Registros anteriores</h2>
+  <div id="journalHistory"></div>
+</section>
+
+<section id="goals" class="view">
+  <small class="eyebrow">DIREÇÃO</small>
+  <h1>Metas & caminho</h1>
+  <p class="muted">Sonhos precisam de direção, ações e revisão.</p>
+
+  <form id="goalForm" class="panel stack">
+    <label>Minha meta
+      <input id="goalTitle" required maxlength="100"
+        placeholder="Ex.: desenvolver minha disciplina">
+    </label>
+
+    <label>Próxima ação concreta
+      <input id="goalNext" required maxlength="140"
+        placeholder="Ex.: estudar e praticar 30 minutos por dia">
+    </label>
+
+    <button class="primary">Adicionar meta</button>
+  </form>
+
+  <div id="goalList"></div>
+</section>
+
+<section id="code" class="view">
+  <small class="eyebrow">SEUS PRINCÍPIOS</small>
+  <h1>Código pessoal</h1>
+  <p class="muted">Versão 1.0 · Caminho da Coerência</p>
+
+  <div class="codeintro">
+    <b>誠</b>
+    <strong>“Minha palavra deve encontrar morada nas minhas ações.”</strong>
+  </div>
+
+  <ol class="principles">
+    <li>
+      <b>Minha palavra tem valor.</b>
+      <span>Não prometerei levianamente. O que decidir fazer, procurarei cumprir.</span>
+    </li>
+    <li>
+      <b>Não negociarei meus objetivos com desconfortos passageiros.</b>
+      <span>Preguiça, medo e desânimo são sentimentos, não comandantes.</span>
+    </li>
+    <li>
+      <b>Valorizarei o tempo que tenho.</b>
+      <span>Não esperarei uma crise para viver conscientemente.</span>
+    </li>
+    <li>
+      <b>Serei responsável pelo meu desenvolvimento.</b>
+      <span>Meu crescimento exige minha participação.</span>
+    </li>
+    <li>
+      <b>Não confundirei perfeição com excelência.</b>
+      <span>Aceitarei falhas, corrigirei meus erros e retomarei o caminho.</span>
+    </li>
+    <li>
+      <b>Respeitarei meu corpo e minha mente.</b>
+      <span>Descanso e recuperação também fazem parte da disciplina.</span>
+    </li>
+    <li>
+      <b>Não viverei de aparência.</b>
+      <span>Praticarei disciplina mesmo quando ninguém estiver olhando.</span>
+    </li>
+    <li>
+      <b>Construirei uma vida da qual me orgulhe.</b>
+      <span>Pelos resultados e pelo homem que me tornei no caminho.</span>
+    </li>
+  </ol>
+</section>
+
+<section id="review" class="view">
+  <small class="eyebrow">FECHAMENTO DA SEMANA</small>
+  <h1>Revisão semanal</h1>
+  <p class="muted">Honestidade sem culpa. Ajustes sem desistência.</p>
+
+  <form id="reviewForm" class="panel stack">
+    <label>1. Quais compromissos cumpri?
+      <textarea id="r1" rows="2"></textarea>
+    </label>
+    <label>2. Onde agi mesmo sem motivação?
+      <textarea id="r2" rows="2"></textarea>
+    </label>
+    <label>3. Onde procrastinei e qual foi o obstáculo?
+      <textarea id="r3" rows="2"></textarea>
+    </label>
+    <label>4. Como retomei depois de falhar?
+      <textarea id="r4" rows="2"></textarea>
+    </label>
+    <label>5. Como evoluí em corpo, música, trabalho/estudo e vida pessoal?
+      <textarea id="r5" rows="3"></textarea>
+    </label>
+    <label>6. Até três prioridades para a próxima semana
+      <textarea id="r6" rows="3"></textarea>
+    </label>
+    <button class="primary">Salvar revisão</button>
+  </form>
+
+  <div id="reviewHistory"></div>
+</section>
+
+<section id="account" class="view">
+  <small class="eyebrow">SINCRONIZAÇÃO E PRIVACIDADE</small>
+  <h1>Minha conta</h1>
+
+  <div class="panel">
+    <p id="cloudStatus">● Conectando à nuvem...</p>
+
+    <p class="muted tiny">
+      Entre ou crie sua conta para manter seus registros sincronizados.
+    </p>
+
+    <form id="authForm" class="stack">
+      <label>E-mail
+        <input id="email" type="email" required>
+      </label>
+
+      <label>Senha
+        <input id="password" type="password" minlength="6" required>
+      </label>
+
+      <div class="buttons">
+        <button class="primary">Entrar</button>
+        <button type="button" id="signup" class="secondary">Criar conta</button>
+      </div>
+    </form>
+
+    <button id="logout" class="secondary hidden">Sair da conta</button>
+  </div>
+
+  <!-- Área técnica exclusiva do administrador -->
+  <div id="adminConfigPanel" class="panel hidden">
+    <small class="gold">ÁREA DO ADMINISTRADOR</small>
+    <h2>Configuração da nuvem</h2>
+
+    <p class="muted tiny">
+      Configuração técnica do Supabase. Utilize somente a chave pública.
+      Nunca use a chave service_role ou uma chave secret.
+    </p>
+
+    <form id="configForm" class="stack">
+      <label>Project URL
+        <input id="sbUrl" type="url" required>
+      </label>
+
+      <label>Publishable / anon key
+        <textarea id="sbKey" rows="2" required></textarea>
+      </label>
+
+      <button class="primary">Salvar configuração</button>
+    </form>
+
+    <p id="configMsg" class="tiny muted"></p>
+  </div>
+
+  <div class="panel">
+    <h2>Seus dados</h2>
+    <p class="muted tiny">
+      Seus registros são sincronizados na nuvem quando você está conectado.
+    </p>
+    <button id="export" class="secondary">Exportar backup (.json)</button>
+  </div>
+</section>
+
+</main>
+
+<nav>
+  <button class="nav active" data-go="dashboard">
+    <b>⌂</b><small>Hoje</small>
+  </button>
+  <button class="nav" data-go="habits">
+    <b>✓</b><small>Hábitos</small>
+  </button>
+  <button class="nav" data-go="journal">
+    <b>▤</b><small>Diário</small>
+  </button>
+  <button class="nav" data-go="goals">
+    <b>◎</b><small>Metas</small>
+  </button>
+  <button class="nav" data-go="code">
+    <b>道</b><small>Código</small>
+  </button>
+</nav>
+
+<div id="toast"></div>
+
+</div>
+<script type="module" src="app.js"></script>
+</body>
+</html>
