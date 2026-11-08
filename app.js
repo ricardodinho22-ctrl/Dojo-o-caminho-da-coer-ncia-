@@ -31,7 +31,52 @@ function config(){try{return JSON.parse(localStorage.getItem(cfgkey)||"{}")}catc
 function status(t){$("cloudStatus").textContent="● "+t}
 let timer;async function cloudSave(){if(!S.sb||!S.user)return;clearTimeout(timer);timer=setTimeout(async()=>{let payload={user_id:S.user.id,habits:S.habits,checks:S.checks,journal:S.journal,goals:S.goals,reviews:S.reviews,updated_at:new Date().toISOString()};let {error}=await S.sb.from("dojo_profiles").upsert(payload,{onConflict:"user_id"});status(error?"Erro de sincronização: "+error.message:"Conta conectada · dados sincronizados")},600)}
 async function loadCloud(){if(!S.user)return;status("Sincronizando...");let {data,error}=await S.sb.from("dojo_profiles").select("*").eq("user_id",S.user.id).maybeSingle();if(error){status("Erro: "+error.message);return}if(data){S.habits=data.habits||S.habits;S.checks=data.checks||{};S.journal=data.journal||[];S.goals=data.goals||[];S.reviews=data.reviews||[];localStorage.setItem(key,JSON.stringify({habits:S.habits,checks:S.checks,journal:S.journal,goals:S.goals,reviews:S.reviews}))}else await cloudSave();render();status("Conta conectada · dados sincronizados")}
-async function initCloud(){let c=config();$("sbUrl").value=c.url||"";$("sbKey").value=c.key||"";if(!c.url||!c.key)return status("Modo local · configure a nuvem");try{S.sb=createClient(c.url,c.key);let {data:{session}}=await S.sb.auth.getSession();S.user=session?.user||null;if(S.user){$("authForm").classList.add("hidden");$("logout").classList.remove("hidden");await loadCloud()}else status("Nuvem configurada · entre ou crie sua conta");S.sb.auth.onAuthStateChange(async(_,s)=>{S.user=s?.user||null;if(S.user){$("authForm").classList.add("hidden");$("logout").classList.remove("hidden");await loadCloud()}else{$("authForm").classList.remove("hidden");$("logout").classList.add("hidden");status("Sessão encerrada")}})}catch(e){status("Falha na conexão: "+e.message)}}
+async function initCloud(){let c=config();$("sbUrl").value=c.url||"";$("sbKey").value=c.key||"";if(!c.url||!c.key)return status("Modo local · configure a nuvem");try{S.sb=createClient(c.url,c.key);let {data:{session}}=await S.sb.auth.getSession();S.user=session?.user||null;if(S.user){$("authForm").classList.add("hidden");$("logout").classList.remove("hidden");await loadCloud()}else status("Nuvem configurada · entre ou crie sua conta")} S.sb.auth.onAuthStateChange((event, session) => {
+  const nextUser = session?.user || null;
+  const previousUserId = S.user?.id || null;
+  const nextUserId = nextUser?.id || null;
+
+  if (event === "SIGNED_OUT") {
+    clearTimeout(timer);
+
+    S.user = null;
+    S.habits = [];
+    S.checks = {};
+    S.journal = [];
+    S.goals = [];
+    S.reviews = [];
+
+    localStorage.removeItem(key);
+
+    $("authForm").classList.remove("hidden");
+    $("logout").classList.add("hidden");
+
+    render();
+    status("Sessão encerrada · dados locais removidos");
+    return;
+  }
+
+  if (event === "SIGNED_IN" && previousUserId !== nextUserId) {
+    clearTimeout(timer);
+
+    S.habits = [];
+    S.checks = {};
+    S.journal = [];
+    S.goals = [];
+    S.reviews = [];
+
+    localStorage.removeItem(key);
+  }
+
+  S.user = nextUser;
+
+  if (S.user) {
+    $("authForm").classList.add("hidden");
+    $("logout").classList.remove("hidden");
+
+    setTimeout(() => loadCloud(), 0);
+  }
+}); }catch(e){status("Falha na conexão: "+e.message)}}
 $("configForm").onsubmit=e=>{e.preventDefault();let url=$("sbUrl").value.trim(),key=$("sbKey").value.trim();if(!url||!key)return $("configMsg").textContent="Preencha URL e chave pública.";localStorage.setItem(cfgkey,JSON.stringify({url,key}));location.reload()};
 $("authForm").onsubmit=async e=>{e.preventDefault();if(!S.sb)return toast("Configure o Supabase primeiro.");let {error}=await S.sb.auth.signInWithPassword({email:$("email").value,password:$("password").value});toast(error?error.message:"Login realizado.")};
 $("signup").onclick=async()=>{if(!S.sb)return toast("Configure o Supabase primeiro.");let {data,error}=await S.sb.auth.signUp({email:$("email").value,password:$("password").value});toast(error?error.message:(data.session?"Conta criada!":"Verifique seu e-mail para confirmar."))};
